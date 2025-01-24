@@ -1,0 +1,50 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: TheBetterStore VPC NatGw definition. Kept separate to delete PoC on schedule for cost savings
+
+Parameters:
+  Environment:
+    Type: String
+
+  VpcCFStackName:
+    Type: String
+    Default: tbs-infra-vpc-prod
+
+Resources:
+  NatGatewayAEIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+
+  NatGatewayA:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt NatGatewayAEIP.AllocationId
+      SubnetId:
+        Fn::ImportValue: !Sub ${VpcCFStackName}:PublicSubnetA:Id
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-NatGateway
+
+  DbPrivateAInternetRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Fn::ImportValue: !Sub '${VpcCFStackName}:DbPrivateART:Id'
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref "NatGatewayA"
+
+  DbPrivateBInternetRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Fn::ImportValue: !Sub '${VpcCFStackName}:DbPrivateBRT:Id'
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref "NatGatewayA"
+
+  DbPrivateCInternetRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Fn::ImportValue: !Sub '${VpcCFStackName}:DbPrivateCRT:Id'
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref "NatGatewayA"

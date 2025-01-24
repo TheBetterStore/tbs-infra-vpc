@@ -1,0 +1,70 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: TheBetterStore VPC NatGw timed removal.  Used for PoC only (to save costs)
+
+Transform:
+  - AWS::Serverless-2016-10-31
+
+Parameters:
+  Environment:
+    Type: String
+
+  VpcCFNatGwStackName:
+    Type: String
+    Default: tbs-infra-vpc-natgw-prod
+
+Resources:
+  DeleteNatGwStackFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      InlineCode: !Sub |
+        const { CloudFormationClient, DeleteStackCommand } = require ("@aws-sdk/client-cloudformation");
+        
+        exports.handler = async (event) => {
+        const client = new CloudFormationClient();
+        const input = { // DeleteStackInput
+          StackName: "${VpcCFNatGwStackName}", // required
+          // RoleARN: "STRING_VALUE",
+          // ClientRequestToken: "STRING_VALUE",
+          DeletionMode: "STANDARD",
+        };
+        const command = new DeleteStackCommand(input);
+        const response = await client.send(command);
+              console.log(response);
+        };
+      Handler: index.handler
+      Runtime: nodejs22.x
+      MemorySize: 512
+      Timeout: 10
+      Description: Delete NatGw stack
+      Tracing: Active
+      # Role: !GetAtt LambdaExcecutionRole.Arn
+      ReservedConcurrentExecutions: 1
+      LoggingConfig:
+        LogGroup: !Ref DeleteNatGwStackFunctionLogs
+        LogFormat: JSON
+        ApplicationLogLevel: INFO
+        SystemLogLevel: INFO
+      Environment:
+        Variables:
+          CF_STACK_NAME: !Ref VpcCFNatGwStackName
+      Policies:
+        - Statement:
+            - Sid: Cloudformation
+              Effect: Allow
+              Action:
+                - cloudformation:DeleteStack
+              Resource:
+                - !Sub arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/${VpcCFNatGwStackName}/*
+            - Sid: EC2
+              Effect: Allow
+              Action:
+                - ec2:Describe*
+                - ec2:DeleteRoute
+                - ec2:DeleteNatGateway
+              Resource: "*"
+
+  DeleteNatGwStackFunctionLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-GetOrdersFunction"
+      RetentionInDays: 365

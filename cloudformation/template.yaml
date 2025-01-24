@@ -268,3 +268,18 @@ Outputs:
     Value: !Ref PublicSubnetC
     Export:
       Name: !Sub '${AWS::StackName}:PublicSubnetC:Id'
+
+  DbPrivateARTId:
+    Value: !Ref DbPrivateART
+    Export:
+      Name: !Sub '${AWS::StackName}:DbPrivateART:Id'
+
+  DbPrivateBRTId:
+    Value: !Ref DbPrivateBRT
+    Export:
+      Name: !Sub '${AWS::StackName}:DbPrivateBRT:Id'
+
+  DbPrivateCRTId:
+    Value: !Ref DbPrivateCRT
+    Export:
+      Name: !Sub '${AWS::StackName}:DbPrivateCRT:Id'
