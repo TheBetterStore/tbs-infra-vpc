@@ -9,6 +9,30 @@ Parameters:
     Type: String
     Default: 10.1.0.0/16
 
+  PublicSubnetACidr:
+    Type: String
+    Default: 10.1.0.0/24
+
+  PublicSubnetBCidr:
+    Type: String
+    Default: 10.1.1.0/24
+
+  PublicSubnetCCidr:
+    Type: String
+    Default: 10.1.2.0/24
+
+  DbPrivateSubnetACidr:
+    Type: String
+    Default: 10.1.3.0/24
+
+  DbPrivateSubnetBCidr:
+    Type: String
+    Default: 10.1.4.0/24
+
+  DbPrivateSubnetCCidr:
+    Type: String
+    Default: 10.1.5.0/24
+
 Resources:
   VPC:
     Type: AWS::EC2::VPC
@@ -84,30 +108,141 @@ Resources:
           Value: !Sub "${AWS::StackName}-PublicRT"
       VpcId: !Ref VPC
 
-  PrivateART:
+  DbPrivateART:
     Type: AWS::EC2::RouteTable
     Properties:
       Tags:
         - Key: Name
-          Value: !Sub "${AWS::StackName}-PrivateART"
+          Value: !Sub "${AWS::StackName}-DbPrivateART"
       VpcId: !Ref VPC
 
-  PrivateBRT:
+  DbPrivateBRT:
     Type: AWS::EC2::RouteTable
     Properties:
       Tags:
         - Key: Name
-          Value: !Sub "${AWS::StackName}-PrivateART"
+          Value: !Sub "${AWS::StackName}-DbPrivateBRT"
       VpcId: !Ref VPC
 
-  PrivateCRT:
+  DbPrivateCRT:
     Type: AWS::EC2::RouteTable
     Properties:
       Tags:
         - Key: Name
-          Value: !Sub "${AWS::StackName}-PrivateART"
+          Value: !Sub "${AWS::StackName}-DbPrivateCRT"
       VpcId: !Ref VPC
 
+  PublicSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Sub "${AWS::Region}a"
+      CidrBlock: !Ref PublicSubnetACidr
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-PublicSubnetA"
+      VpcId: !Ref VPC
+
+  PublicSubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Sub "${AWS::Region}b"
+      CidrBlock: !Ref PublicSubnetBCidr
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-PublicSubnetB"
+      VpcId: !Ref VPC
+
+  PublicSubnetC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Sub "${AWS::Region}c"
+      CidrBlock: !Ref PublicSubnetCCidr
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-PublicSubnetC"
+      VpcId: !Ref VPC
+
+  DbPrivateSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Sub "${AWS::Region}a"
+      CidrBlock: !Ref DbPrivateSubnetACidr
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-DbPrivateSubnetA"
+      VpcId: !Ref VPC
+
+  DbPrivateSubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Sub "${AWS::Region}b"
+      CidrBlock: !Ref DbPrivateSubnetBCidr
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-DbPrivateSubnetB"
+      VpcId: !Ref VPC
+
+  DbPrivateSubnetC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Sub "${AWS::Region}c"
+      CidrBlock: !Ref DbPrivateSubnetCCidr
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-DbPrivateSubnetC"
+      VpcId: !Ref VPC
+
+  PublicSubnetARTAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRT
+      SubnetId: !Ref PublicSubnetA
+
+  PublicSubnetBRTAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRT
+      SubnetId: !Ref PublicSubnetB
+
+  PublicSubnetCRTAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRT
+      SubnetId: !Ref PublicSubnetC
+
+  DbPrivateSubnetARTAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref DbPrivateART
+      SubnetId: !Ref DbPrivateSubnetA
+
+  DbPrivateSubnetBRTAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref DbPrivateBRT
+      SubnetId: !Ref DbPrivateSubnetB
+
+  DbPrivateSubnetCRTAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref DbPrivateCRT
+      SubnetId: !Ref DbPrivateSubnetC
+
+  InternetGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref VPC
+
+  PublicInternetRoute:
+    Type: AWS::EC2::Route
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      RouteTableId: !Ref PublicRT
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  # No NatGw's here yet, test envt only avoiding costs
 Outputs:
   VPCId:
     Value: !Ref VPC
@@ -118,3 +253,18 @@ Outputs:
     Value: !Ref VPCCidr
     Export:
       Name: !Sub '${AWS::StackName}:VPC:Cidr'
+
+  PublicSubnetAId:
+    Value: !Ref PublicSubnetA
+    Export:
+      Name: !Sub '${AWS::StackName}:PublicSubnetA:Id'
+
+  PublicSubnetBId:
+    Value: !Ref PublicSubnetB
+    Export:
+      Name: !Sub '${AWS::StackName}:PublicSubnetB:Id'
+
+  PublicSubnetCId:
+    Value: !Ref PublicSubnetC
+    Export:
+      Name: !Sub '${AWS::StackName}:PublicSubnetC:Id'
