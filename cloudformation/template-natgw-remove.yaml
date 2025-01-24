@@ -61,6 +61,7 @@ Resources:
                 - ec2:Describe*
                 - ec2:DeleteRoute
                 - ec2:DeleteNatGateway
+                - ec2:ReleaseAddress
               Resource: "*"
 
   DeleteNatGwStackFunctionLogs:
