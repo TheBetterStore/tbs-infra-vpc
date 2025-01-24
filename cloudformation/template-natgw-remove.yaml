@@ -12,6 +12,10 @@ Parameters:
     Type: String
     Default: tbs-infra-vpc-natgw-prod
 
+  DeleteNatGwSchedule:
+    Type: String
+    Default: "cron(0 12 * * ? *)" # Runs 12am UTC every day
+
 Resources:
   DeleteNatGwStackFunction:
     Type: AWS::Serverless::Function
@@ -69,3 +73,21 @@ Resources:
     Properties:
       LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-GetOrdersFunction"
       RetentionInDays: 365
+
+  DeleteNatGwScheduleRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: Delete NatGw in VPC on defined schedule for cost savings for this PoC
+      ScheduleExpression: !Ref DeleteNatGwSchedule
+      State: ENABLED
+      Targets:
+        - Id: DeleteNatGwStack
+          Arn: !GetAtt DeleteNatGwStackFunction.Arn
+
+  OrderConfirmedRulePermissions:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref DeleteNatGwStackFunction
+      Action: lambda:InvokeFunction
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt DeleteNatGwScheduleRule.Arn
