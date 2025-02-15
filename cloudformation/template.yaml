@@ -33,6 +33,18 @@ Parameters:
     Type: String
     Default: 10.1.5.0/24
 
+  AppPrivateSubnetACidr:
+    Type: String
+    Default: 10.1.6.0/24
+
+  AppPrivateSubnetBCidr:
+    Type: String
+    Default: 10.1.7.0/24
+
+  AppPrivateSubnetCCidr:
+    Type: String
+    Default: 10.1.8.0/24
+
 Resources:
   VPC:
     Type: AWS::EC2::VPC
@@ -132,6 +144,30 @@ Resources:
           Value: !Sub "${AWS::StackName}-DbPrivateCRT"
       VpcId: !Ref VPC
 
+  AppPrivateART:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-AppPrivateART"
+      VpcId: !Ref VPC
+
+  AppPrivateBRT:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-AppPrivateBRT"
+      VpcId: !Ref VPC
+
+  AppPrivateCRT:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-AppPrivateCRT"
+      VpcId: !Ref VPC
+
   PublicSubnetA:
     Type: AWS::EC2::Subnet
     Properties:
@@ -192,6 +228,36 @@ Resources:
           Value: !Sub "${AWS::StackName}-DbPrivateSubnetC"
       VpcId: !Ref VPC
 
+  AppPrivateSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Sub "${AWS::Region}a"
+      CidrBlock: !Ref AppPrivateSubnetACidr
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-AppPrivateSubnetA"
+      VpcId: !Ref VPC
+
+  AppPrivateSubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Sub "${AWS::Region}b"
+      CidrBlock: !Ref AppPrivateSubnetBCidr
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-AppPrivateSubnetB"
+      VpcId: !Ref VPC
+
+  AppPrivateSubnetC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Sub "${AWS::Region}c"
+      CidrBlock: !Ref AppPrivateSubnetCCidr
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-AppPrivateSubnetC"
+      VpcId: !Ref VPC
+
   PublicSubnetARTAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
@@ -227,6 +293,24 @@ Resources:
     Properties:
       RouteTableId: !Ref DbPrivateCRT
       SubnetId: !Ref DbPrivateSubnetC
+
+  AppPrivateSubnetARTAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref AppPrivateART
+      SubnetId: !Ref AppPrivateSubnetA
+
+  AppPrivateSubnetBRTAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref AppPrivateBRT
+      SubnetId: !Ref AppPrivateSubnetB
+
+  AppPrivateSubnetCRTAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref AppPrivateCRT
+      SubnetId: !Ref AppPrivateSubnetC
 
   InternetGatewayAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
@@ -283,3 +367,48 @@ Outputs:
     Value: !Ref DbPrivateCRT
     Export:
       Name: !Sub '${AWS::StackName}:DbPrivateCRT:Id'
+
+  AppPrivateRTAId:
+    Value: !Ref AppPrivateART
+    Export:
+      Name: !Sub '${AWS::StackName}:AppPrivateRTA:Id'
+
+  AppPrivateRTBId:
+    Value: !Ref AppPrivateBRT
+    Export:
+      Name: !Sub '${AWS::StackName}:AppPrivateRTB:Id'
+
+  AppPrivateRTCId:
+    Value: !Ref AppPrivateCRT
+    Export:
+      Name: !Sub '${AWS::StackName}:AppPrivateRTC:Id'
+
+  AppPrivateSubnetAId:
+    Value: !Ref AppPrivateSubnetA
+    Export:
+      Name: !Sub '${AWS::StackName}:AppPrivateSubnetA:Id'
+
+  AppPrivateSubnetBId:
+    Value: !Ref AppPrivateSubnetB
+    Export:
+      Name: !Sub '${AWS::StackName}:AppPrivateSubnetB:Id'
+
+  AppPrivateSubnetCId:
+    Value: !Ref AppPrivateSubnetC
+    Export:
+      Name: !Sub '${AWS::StackName}:AppPrivateSubnetC:Id'
+
+  DbPrivateSubnetAId:
+    Value: !Ref DbPrivateSubnetA
+    Export:
+      Name: !Sub '${AWS::StackName}:DbPrivateSubnetA:Id'
+
+  DbPrivateSubnetBId:
+    Value: !Ref DbPrivateSubnetB
+    Export:
+      Name: !Sub '${AWS::StackName}:DbPrivateSubnetB:Id'
+
+  DbPrivateSubnetCId:
+    Value: !Ref DbPrivateSubnetC
+    Export:
+      Name: !Sub '${AWS::StackName}:DbPrivateSubnetC:Id'

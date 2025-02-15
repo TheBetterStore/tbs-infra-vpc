@@ -25,6 +25,30 @@ Resources:
         - Key: Name
           Value: !Sub ${AWS::StackName}-NatGateway
 
+  AppPrivateAInternetRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Fn::ImportValue: !Sub '${VpcCFStackName}:AppPrivateRTA:Id'
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref "NatGatewayA"
+
+  AppPrivateBInternetRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Fn::ImportValue: !Sub '${VpcCFStackName}:AppPrivateRTB:Id'
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref "NatGatewayA"
+
+  AppPrivateCInternetRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Fn::ImportValue: !Sub '${VpcCFStackName}:AppPrivateRTC:Id'
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref "NatGatewayA"
+
   DbPrivateAInternetRoute:
     Type: AWS::EC2::Route
     Properties:
